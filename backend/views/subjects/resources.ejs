@@ -1,0 +1,111 @@
+<!-- views/subjects/resources.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title><%= subject.title %> - Resources</title>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; background: #f8fafc; color: #0f172a; margin: 0; padding: 32px 20px; }
+    .container { max-width: 950px; margin: 0 auto; }
+    .header { background: white; border: 1px solid #e2e8f0; padding: 24px; border-radius: 8px; margin-bottom: 24px; }
+    .header-meta { display: flex; gap: 12px; align-items: center; margin-top: 8px; }
+    .badge-credit { background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 600; }
+    .section { background: white; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+    .btn-pdf { background: #0284c7; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 12px; font-weight: 600; display: inline-block; }
+    .uploader-badge { font-size: 12px; color: #1e293b; background: #e2e8f0; padding: 3px 8px; border-radius: 12px; font-weight: 600; display: inline-block; }
+    .unit-box { background: #f1f5f9; padding: 12px 16px; border-radius: 6px; margin-bottom: 10px; font-size: 13px; line-height: 1.5; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <a href="javascript:history.back()" style="font-size: 13px; color: #0284c7; text-decoration: none;">&larr; Back to Subjects</a>
+    <h1 style="margin: 8px 0 0 0;"><%= subject.title %> (<%= courseCode %>)</h1>
+    <div class="header-meta">
+      
+    </div>
+  </div>
+
+  <!-- PREVIOUS YEAR PAPERS (PYQs) -->
+  <div class="section">
+    <h3 style="margin: 0;">Previous Year Question Papers (PYQs)</h3>
+    <% if (pyqs.length === 0) { %>
+      <p style="color: #94a3b8; font-size: 13px; margin-top: 8px;">No PYQs uploaded for this subject yet.</p>
+    <% } else { %>
+      <table>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Academic Year</th>
+            <th>Uploaded By</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% pyqs.forEach(doc => { %>
+            <tr>
+              <td><strong><%= doc.title %></strong></td>
+              <td><%= doc.academicYear || 'All Sessions' %></td>
+              <td>
+                <span class="uploader-badge">
+                  <%= (doc.uploadedBy && doc.uploadedBy.name) ? doc.uploadedBy.name : 'Admin' %>
+                </span>
+              </td>
+              <td><a href="/documents/<%= doc._id %>/view" target="_blank" class="btn-pdf">Open PDF</a></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } %>
+  </div>
+
+  <!-- NOTES SECTION -->
+  <div class="section">
+    <h3 style="margin: 0;">Notes & Study Materials</h3>
+    <% if (notes.length === 0) { %>
+      <p style="color: #94a3b8; font-size: 13px; margin-top: 8px;">No notes uploaded for this subject yet.</p>
+    <% } else { %>
+      <table>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Uploaded By</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% notes.forEach(doc => { %>
+            <tr>
+              <td><strong><%= doc.title %></strong></td>
+              <td>
+                <span class="uploader-badge">
+                  <%= (doc.uploadedBy && doc.uploadedBy.name) ? doc.uploadedBy.name : 'Admin' %>
+                </span>
+              </td>
+              <td><a href="/documents/<%= doc._id %>/view" target="_blank" class="btn-pdf">Open PDF</a></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } %>
+  </div>
+
+  <!-- SYLLABUS SECTION -->
+  <% if (subject.syllabus && subject.syllabus.length > 0) { %>
+    <div class="section">
+      <h3 style="margin: 0 0 12px 0;">Official Syllabus</h3>
+      <% subject.syllabus.forEach(unit => { %>
+        <div class="unit-box">
+          <strong>Unit <%= unit.unitNumber %></strong>
+          <p style="margin: 4px 0 0 0;"><%= unit.topics.join(' ') %></p>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+</div>
+
+</body>
+</html>

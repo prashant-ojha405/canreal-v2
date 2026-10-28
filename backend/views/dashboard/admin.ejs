@@ -1,0 +1,109 @@
+<!-- views/dashboard/admin.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Super Admin Control Center</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #0f172a; margin: 0; padding: 24px; color: #f8fafc; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .card { background: #1e293b; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+    .grid-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+    .metric-box { background: #1e293b; padding: 16px; border-radius: 8px; text-align: center; }
+    .metric-val { font-size: 28px; font-weight: bold; color: #38bdf8; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 10px; border-bottom: 1px solid #334155; text-align: left; font-size: 14px; }
+    .btn-red { background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+      <h2 style="margin: 0; color: #38bdf8;">Super Admin Center</h2>
+      <p style="margin: 4px 0 0 0; color: #94a3b8;">Logged in as <%= user.name %></p>
+    </div>
+    <button class="btn-red" onclick="logout()">Sign Out</button>
+  </div>
+
+  <!-- METRICS -->
+  <div class="grid-metrics">
+    <div class="metric-box"><div class="metric-val" id="mTeachers">0</div><div>Faculty</div></div>
+    <div class="metric-box"><div class="metric-val" id="mStudents">0</div><div>Students</div></div>
+    <div class="metric-box"><div class="metric-val" id="mDocs">0</div><div>Total Docs</div></div>
+    <div class="metric-box"><div class="metric-val" id="mSubs">0</div><div>Subjects</div></div>
+  </div>
+
+  <!-- TEACHER DIRECTORY -->
+  <div class="card">
+    <h3 style="color: #38bdf8;">Faculty Directory</h3>
+    <table>
+      <thead><tr><th>Name</th><th>Email</th><th>Mobile</th><th>Uploads</th><th>Action</th></tr></thead>
+      <tbody id="adminTeacherList"><tr><td colspan="5">Loading...</td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- STUDENT DIRECTORY -->
+  <div class="card">
+    <h3 style="color: #38bdf8;">Student Directory</h3>
+    <table>
+      <thead><tr><th>Name</th><th>Email</th><th>Mobile</th><th>Uploads</th><th>Action</th></tr></thead>
+      <tbody id="adminStudentList"><tr><td colspan="5">Loading...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  async function loadAdminDashboard() {
+    const res = await fetch('/dashboard/api/admin');
+    const json = await res.json();
+    if (!json.success) return;
+
+    const { metrics, teachers, students } = json.data;
+    document.getElementById('mTeachers').innerText = metrics.totalTeachers;
+    document.getElementById('mStudents').innerText = metrics.totalStudents;
+    document.getElementById('mDocs').innerText = metrics.totalDocuments;
+    document.getElementById('mSubs').innerText = metrics.subjectsCovered;
+
+    // Render Teachers
+    const tTbody = document.getElementById('adminTeacherList');
+    tTbody.innerHTML = teachers.length ? '' : '<tr><td colspan="5">No teachers found.</td></tr>';
+    teachers.forEach(t => {
+      tTbody.innerHTML += `
+        <tr>
+          <td>${t.name}</td><td>${t.email}</td><td>${t.mobileNumber}</td><td>${t.uploadCount}</td>
+          <td><button class="btn-red" onclick="removeUser('${t._id}', '${t.name}')">Remove Teacher</button></td>
+        </tr>
+      `;
+    });
+
+    // Render Students
+    const sTbody = document.getElementById('adminStudentList');
+    sTbody.innerHTML = students.length ? '' : '<tr><td colspan="5">No students found.</td></tr>';
+    students.forEach(s => {
+      sTbody.innerHTML += `
+        <tr>
+          <td>${s.name}</td><td>${s.email}</td><td>${s.mobileNumber}</td><td>${s.uploadCount}</td>
+          <td><button class="btn-red" onclick="removeUser('${s._id}', '${s.name}')">Remove Student</button></td>
+        </tr>
+      `;
+    });
+  }
+
+  async function removeUser(id, name) {
+    if (!confirm(`Delete user "${name}" and all their uploads completely?`)) return;
+    const res = await fetch(`/dashboard/users/${id}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (res.ok) loadAdminDashboard();
+    else alert(data.message);
+  }
+
+  async function logout() {
+    await fetch('/auth/logout', { method: 'POST' });
+    window.location.href = '/auth/login';
+  }
+
+  loadAdminDashboard();
+</script>
+</body>
+</html>

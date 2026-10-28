@@ -1,0 +1,137 @@
+<!-- views/dashboard/teacher.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Teacher Dashboard</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #f8fafc; margin: 0; padding: 24px; color: #0f172a; }
+    .container { max-width: 1000px; margin: 0 auto; }
+    .card { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .header { display: flex; justify-content: space-between; align-items: center; }
+    .btn { padding: 6px 12px; border-radius: 4px; border: none; cursor: pointer; font-weight: 600; font-size: 13px; }
+    .btn-red { background: #ef4444; color: white; }
+    .btn-green { background: #10b981; color: white; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: left; font-size: 14px; }
+    .badge { background: #e0e7ff; color: #3730a3; padding: 4px 8px; border-radius: 4px; font-weight: 700; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="card header">
+    <div>
+      <h2 style="margin: 0;">Faculty Dashboard</h2>
+      <p style="margin: 4px 0 0 0; color: #64748b;">Welcome, <%= user.name %></p>
+    </div>
+    <button class="btn btn-red" onclick="logout()">Sign Out</button>
+  </div>
+
+  <!-- PASSKEY MANAGEMENT -->
+  <div class="card" style="border-left: 4px solid #3b82f6;">
+    <h3 style="margin-top: 0;">Student Registration Passkey</h3>
+    <p style="color: #64748b; font-size: 14px;">Students need this secret key to sign up. You can rotate it anytime:</p>
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <span id="currentPasskey" class="badge">Loading...</span>
+      <input type="text" id="newPasskey" placeholder="Enter new passkey" style="padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px;" />
+      <button class="btn btn-green" onclick="changePasskey()">Update Passkey</button>
+    </div>
+  </div>
+
+  <!-- STUDENTS LIST & MANAGEMENT -->
+  <div class="card">
+    <h3>Registered Students & Their Uploads</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Mobile</th>
+          <th>Admitted</th>
+          <th>Uploads</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="studentList"><tr><td colspan="5">Loading students...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  async function loadTeacherDashboard() {
+    const res = await fetch('/dashboard/api/teacher');
+    const json = await res.json();
+    if (!json.success) return;
+
+    document.getElementById('currentPasskey').innerText = json.data.studentPasskey;
+
+    const tbody = document.getElementById('studentList');
+    tbody.innerHTML = '';
+    if (json.data.students.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5">No students registered yet.</td></tr>';
+      return;
+    }
+
+    json.data.students.forEach(s => {
+      let docLinks = s.documents.map(d => `
+        <div style="font-size: 12px; margin-bottom: 2px;">
+          <a href="${d.fileUrl}" target="_blank">${d.title}</a> (${d.category})
+          <button style="color: red; border: none; background: none; cursor: pointer;" onclick="deleteDocument('${d._id}')">[x]</button>
+        </div>
+      `).join('');
+
+      tbody.innerHTML += `
+        <tr>
+          <td><strong>${s.name}</strong><br><small style="color:#64748b;">${s.email}</small></td>
+          <td>${s.mobileNumber}</td>
+          <td>${s.admissionYear || 'N/A'}</td>
+          <td>${docLinks || '<span style="color:#94a3b8; font-size: 12px;">None</span>'}</td>
+          <td>
+            <button class="btn btn-red" onclick="removeStudent('${s._id}', '${s.name}')">Remove Student</button>
+          </td>
+        </tr>
+      `;
+    });
+  }
+
+  async function changePasskey() {
+    const key = document.getElementById('newPasskey').value.trim();
+    if (!key) return alert('Enter a valid passkey');
+    const res = await fetch('/dashboard/teacher/student-passkey', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ newPasskey: key })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      alert('Passkey updated!');
+      document.getElementById('newPasskey').value = '';
+      loadTeacherDashboard();
+    } else {
+      alert(data.message);
+    }
+  }
+
+  async function deleteDocument(id) {
+    if (!confirm('Delete this student upload?')) return;
+    const res = await fetch(`/documents/${id}`, { method: 'DELETE' });
+    if (res.ok) loadTeacherDashboard();
+    else alert('Failed to delete resource');
+  }
+
+  async function removeStudent(id, name) {
+    if (!confirm(`Delete student "${name}" and all their uploaded files?`)) return;
+    const res = await fetch(`/dashboard/users/${id}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (res.ok) loadTeacherDashboard();
+    else alert(data.message);
+  }
+
+  async function logout() {
+    await fetch('/auth/logout', { method: 'POST' });
+    window.location.href = '/auth/login';
+  }
+
+  loadTeacherDashboard();
+</script>
+</body>
+</html>
