@@ -1,17 +1,18 @@
 // backend/models/inviteToken.js
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
-const inviteTokenSchema = new mongoose.Schema(
+const userInviteSchema = new mongoose.Schema(
   {
-    token: {
+    email: {
       type: String,
-      required: true,
+      required: [true, 'Email to authorize is required'],
       unique: true,
+      lowercase: true,
       trim: true,
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Teacher',
+      ref: 'User', 
       required: true,
     },
     targetRole: {
@@ -25,11 +26,12 @@ const inviteTokenSchema = new mongoose.Schema(
     },
     usedBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Teacher',
+      ref: 'User',
       default: null,
     },
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model('InviteToken', inviteTokenSchema);
+const UserInvite = mongoose.model('UserInvite', userInviteSchema);
+export default UserInvite;
