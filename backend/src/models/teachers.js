@@ -1,9 +1,8 @@
 // backend/models/teachers.js
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
-const Schema = mongoose.Schema;
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
-const teacherSchema = new Schema(
+const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -13,7 +12,7 @@ const teacherSchema = new Schema(
     role: {
       type: String,
       enum: ['teacher', 'admin', 'student'],
-      default: 'teacher',
+      default: 'student',
     },
     mobileNumber: {
       type: String,
@@ -43,7 +42,7 @@ const teacherSchema = new Schema(
     },
     addedBy: {
       type: Schema.Types.ObjectId,
-      ref: 'Teacher',
+      ref: 'User',
       default: null,
     },
     admissionYear: {
@@ -59,8 +58,7 @@ const teacherSchema = new Schema(
   }
 );
 
-// Virtual: Auto-increment student year every August
-teacherSchema.virtual('currentYear').get(function () {
+userSchema.virtual('currentYear').get(function () {
   if (this.role !== 'student' || !this.admissionYear) return undefined;
   const now = new Date();
   const currentCalendarYear = now.getFullYear();
@@ -69,18 +67,15 @@ teacherSchema.virtual('currentYear').get(function () {
   return Math.min(Math.max(year, 1), 4);
 });
 
-teacherSchema.pre('save', async function () {
+userSchema.pre('save', async function () {
   if (!this.isModified('password')) return;
-  try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-  } catch (err) {
-    console.error(err);
-  }
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
 });
 
-teacherSchema.methods.comparePassword = async function (enteredPassword) {
+userSchema.methods.comparePassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-module.exports = mongoose.model('Teacher', teacherSchema);
+const User = mongoose.model('User', userSchema);
+export default User;
