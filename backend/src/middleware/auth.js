@@ -1,15 +1,12 @@
-// backend/middleware/auth.js
-const jwt = require('jsonwebtoken');
-const Teacher = require('../models/teachers');
+// backend/src/middleware/auth.js
+import jwt from "jsonwebtoken";
+import User from '../models/user-model.js';
 
 // Unified authentication verification
 const verifyUser = async (req, res, next) => {
   try {
     let token;
-    if (
-      req.headers.authorization &&
-      req.headers.authorization.startsWith('Bearer ')
-    ) {
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
       token = req.headers.authorization.split(' ')[1];
     } else if (req.cookies && req.cookies.token) {
       token = req.cookies.token;
@@ -47,30 +44,26 @@ const verifyUser = async (req, res, next) => {
 };
 
 // Role authorization guard: case-insensitive & allows admins everywhere
-const authorizeRoles = (...allowedRoles) => {
+export const authorizeRoles = (...allowedRoles) => {
   return (req, res, next) => {
     if (!req.user) {
-      if (req.xhr || req.headers.accept?.includes('application/json')) {
-        return res.status(403).json({ success: false, message: 'Access denied: User not authenticated.' });
-      }
-      return res.status(403).send('Access Denied: User not authenticated.');
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied: User not authenticated.',
+      });
     }
 
     const userRole = (req.user.role || '').toLowerCase();
     const normalizedAllowed = allowedRoles.map((r) => r.toLowerCase());
 
-    // Super admin bypass or explicit role match
     if (userRole === 'admin' || normalizedAllowed.includes(userRole)) {
       return next();
     }
 
-    if (req.xhr || req.headers.accept?.includes('application/json')) {
-      return res.status(403).json({
-        success: false,
-        message: `Access denied. Requires role: [${allowedRoles.join(', ')}], but current role is "${userRole}".`,
-      });
-    }
-    return res.status(403).send('Access Denied: Insufficient permissions.');
+    return res.status(403).json({
+      success: false,
+      message: `Permission denied. Requires role: [${allowedRoles.join(', ')}].`,
+    });
   };
 };
 
