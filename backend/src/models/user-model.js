@@ -28,6 +28,13 @@ const userSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
     },
+    emrollmentNumber: {
+      type: String,
+      trim: true,
+      uppercase: true,
+      unique: true,
+      sparse: true,
+    },
     password: {
       type: String,
       required: true,

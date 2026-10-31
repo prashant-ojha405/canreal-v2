@@ -1,10 +1,10 @@
-// backend/routes/auth.js
-const express = require('express');
-const router = express.Router();
-const multer = require('multer');
-const rateLimit = require('express-rate-limit');
-const authController = require('../controllers/auth');
-const { verifyUser, authorizeRoles } = require('../middleware/auth');
+// backend/src/routes/auth.js
+import express from 'express';
+import router from express.Router();
+import multer from 'multer';
+import rateLimit from 'express-rate-limit';
+import authController from '../controllers/auth';
+import { verifyUser, authorizeRoles } from '../middleware/auth';
 
 const upload = multer({
   storage: multer.memoryStorage(),

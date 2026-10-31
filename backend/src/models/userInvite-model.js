@@ -3,6 +3,12 @@ import mongoose from "mongoose";
 
 const userInviteSchema = new mongoose.Schema(
   {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+      immutable: true,
+    },
     email: {
       type: String,
       required: [true, 'Email to authorize is required'],
@@ -10,14 +16,20 @@ const userInviteSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User', 
-      required: true,
-    },
     targetRole: {
       type: String,
       enum: ['student', 'teacher'],
+      required: true,
+    },
+    emrollmentNumber: {
+      type: String,
+      trim: true,
+      uppercase: true,
+      default: null,
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
       required: true,
     },
     isUsed: {
