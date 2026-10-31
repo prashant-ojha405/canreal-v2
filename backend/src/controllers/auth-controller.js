@@ -309,3 +309,10 @@ export const inviteUser = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+
+export const getMe = async (req, res) => {
+  return res.status(200).json({
+    success: true,
+    user: req.user, // verifyUser middleware already fetched this from MongoDB!
+  });
+};

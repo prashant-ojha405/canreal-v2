@@ -1,20 +1,18 @@
 // backend/src/middleware/auth.js
 import jwt from "jsonwebtoken";
+import rateLimit from 'express-rate-limit';
 import User from '../models/user-model.js';
 
 // Guard 1: Verify JWT & attach user to req.user
 export const verifyUser = async (req, res, next) => {
   try {
     let token;
-
-    // 1. Check Authorization header ("Bearer <token>") OR httpOnly cookie
     if (req.headers.authorization?.startsWith('Bearer ')) {
       token = req.headers.authorization.split(' ')[1];
     } else if (req.cookies?.token) {
       token = req.cookies.token;
     }
 
-    // 2. If no token found, block immediately
     if (!token) {
       return res.status(401).json({
         success: false,
@@ -22,10 +20,7 @@ export const verifyUser = async (req, res, next) => {
       });
     }
 
-    // 3. Verify token signature & expiration using JWT_SECRET
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // 4. Fetch the live user from MongoDB (excluding their password hash)
     const user = await User.findById(decoded.id).select('-password');
 
     if (!user) {
@@ -35,7 +30,6 @@ export const verifyUser = async (req, res, next) => {
       });
     }
 
-    // 5. Attach user object to req so the controller knows who is logged in
     req.user = user;
     next();
   } catch (error) {
@@ -47,7 +41,6 @@ export const verifyUser = async (req, res, next) => {
   }
 };
 
-// Role authorization guard: case-insensitive & allows admins everywhere
 export const authorizeRoles = (...allowedRoles) => {
   return (req, res, next) => {
     if (!req.user) {
@@ -71,3 +64,10 @@ export const authorizeRoles = (...allowedRoles) => {
   };
 };
 
+export const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many attempts. Please try again later.' },
+});
