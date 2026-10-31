@@ -1,4 +1,4 @@
-// backend/models/inviteToken.js
+// backend/src/models/userInvite-model.js
 import mongoose from "mongoose";
 
 const userInviteSchema = new mongoose.Schema(

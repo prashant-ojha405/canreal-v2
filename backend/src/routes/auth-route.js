@@ -1,8 +1,8 @@
-// backend/src/routes/auth.js
+// backend/src/routes/auth-route.js
 import express from 'express';
 import multer from 'multer';
-import { register, login, logout, sendOtp, inviteUser } from '../controllers/auth.js';
-import { verifyUser, authorizeRoles, authLimiter } from '../middleware/auth.js';
+import { register, login, logout, sendOtp, inviteUser } from '../controllers/auth-controller.js';
+import { verifyUser, authorizeRoles, authLimiter } from '../middleware/auth-middleware.js';
 
 const router = express.Router();
 

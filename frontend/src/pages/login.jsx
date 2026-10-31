@@ -69,7 +69,7 @@ export default function LoginForm() {
               Can<span className="text-indigo-400">Real</span>
             </h1>
             <p className="text-xs text-slate-400 mt-2">
-              Sign in with your email or 10-digit mobile number
+              Sign in with your email, 10-digit mobile number or enrollment number
             </p>
           </div>
 

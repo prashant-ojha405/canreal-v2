@@ -5,7 +5,7 @@ const multer = require('multer');
 const streamifier = require('streamifier');
 const Document = require('../models/documents');
 const Subject = require('../models/subjects');
-const cloudinary = require('../config/cloudinary');
+const cloudinary = require('../config/cloudinary-config');
 const { verifyUser } = require('../middleware/auth');
 const convertImagesToPdf = require('../utils/imageToPdf');
 

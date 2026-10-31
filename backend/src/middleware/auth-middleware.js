@@ -1,4 +1,4 @@
-// backend/src/middleware/auth.js
+// backend/src/middleware/auth-middleware.js
 import jwt from "jsonwebtoken";
 import rateLimit from 'express-rate-limit';
 import User from '../models/user-model.js';

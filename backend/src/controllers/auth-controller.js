@@ -1,11 +1,11 @@
-// backend/src/controllers/auth.js
+// backend/src/controllers/auth-controller.js
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import streamifier from 'streamifier';
-import User from '../models/user.js';
-import Otp from '../models/otp.js';
-import UserInvite from '../models/userInvite.js';
-import cloudinary from '../config/cloudinary.js';
+import User from '../models/user-model.js';
+import Otp from '../models/otp-model.js';
+import UserInvite from '../models/userInvite-model.js';
+import cloudinary from '../config/cloudinary-config.js';
 import transporter from '../utils/mailer.js';
 
 export const setAuthCookie = (res, user) => {
